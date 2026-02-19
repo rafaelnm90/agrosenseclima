@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel AgroSense</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -74,13 +77,6 @@
                 <div class="text-slate-400 text-xs uppercase tracking-[0.2em] mb-2 font-bold">Developed by</div>
                 <div class="text-white font-black text-2xl tracking-tight mb-6 drop-shadow-md">Rafael Novais de Miranda</div>
                 
-                <div class="flex flex-col gap-3 items-center justify-center text-sm font-medium">
-                    <a href="mailto:rafaelnovaismiranda@gmail.com" class="flex items-center gap-2 hover:bg-slate-600 hover:text-white transition-all bg-slate-800/40 px-5 py-2.5 rounded-full border border-slate-600 hover:border-slate-400 shadow-sm">
-                        <i class="ph ph-envelope-simple text-lg text-blue-300"></i>
-                        rafaelnovaismiranda@gmail.com
-                    </a>
-                </div>
-                
                 <div class="mt-8 pt-6 border-t border-slate-600/50 text-[10px] text-slate-400">
                     © 2026 Painel AgroSense • Todos os direitos reservados
                 </div>
@@ -97,6 +93,13 @@
         const EXIBIR_LOGS = true;
         function log(msg) { if(EXIBIR_LOGS) console.log(msg); }
 
+        // 🚀 Forçar início no topo da página
+        window.onload = () => {
+            log('🚀 Inicializando aplicação...');
+            window.scrollTo(0, 0);
+            log('✅ Página posicionada no topo.');
+        };
+
         window.onbeforeunload = () => window.scrollTo(0, 0);
         
         window.addEventListener('scroll', () => {
@@ -109,14 +112,15 @@
         
         async function carregarDados() {
             try {
-                log('🚀 Requisição...');
+                log('📡 Solicitando dados da API...');
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 if(data.status === 'erro_fatal') throw new Error(data.msg);
-                log('✅ Dados OK.');
+                log('✅ Dados recebidos com sucesso.');
                 renderizarPainel(data);
             } catch (error) {
-                console.error('❌ Erro:', error);
+                log('❌ Falha na comunicação com o servidor.');
+                console.error('Erro:', error);
                 document.getElementById('loading').innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg text-center mx-auto max-w-lg"><strong>Erro de Conexão</strong><br><span class="text-sm opacity-80">${error.message}</span></div>`;
             }
         }
@@ -130,7 +134,7 @@
         }
 
         function renderizarPainel(data) {
-            log('🚀 Iniciando renderização do painel...');
+            log('🏗️ Montando interface do dashboard...');
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
 
@@ -147,7 +151,7 @@
                     <div class="text-base font-semibold opacity-90 bg-black/10 inline-block px-5 py-1 rounded-full border border-white/20 mt-1">${data.resumo.detalhe}</div>`;
             }
 
-            log('🚀 Processando cotações...');
+            log('📈 Processando indicadores de mercado...');
             const divM = document.getElementById('container-mercado');
             const ordem = ['boi', 'vaca', 'novilha', 'milho', 'soja', 'cafe', 'dolar', 'btc'];
             const cfg = { 'boi': '🐮 BOI', 'vaca': '🐄 VACA', 'novilha': '🐂 NOVILHA', 'milho': '🌽 MILHO', 'soja': '🌱 SOJA', 'cafe': '☕ CAFÉ', 'dolar': '💵 DÓLAR', 'btc': '🪙 BTC' };
@@ -207,7 +211,7 @@
             });
             divM.innerHTML = htmlM;
 
-            log('🚀 Processando clima e construindo menus densos...');
+            log('🌤️ Processando previsões climáticas por cidade...');
             const divC = document.getElementById('clima-container');
             const divNav = document.getElementById('nav-datas'); 
             const diasSemana = ['Domingo', 'Segunda-Feira', 'Terça-Feira', 'Quarta-Feira', 'Quinta-Feira', 'Sexta-Feira', 'Sábado'];
@@ -238,7 +242,6 @@
             let htmlNav = botoesFiltroCidadesHTML; 
 
             if(data.clima && data.clima.datas) {
-                // Montar botões do topo para datas
                 data.clima.datas.forEach((dia, index) => {
                     const safeID = 'dia-' + dia.replace('/', '-');
                     const destaqueBtn = index === 0 ? 'bg-blue-600 text-white border-blue-600 ring-2 ring-blue-200 shadow-md transform scale-[1.02]' : 'bg-white text-slate-600 border-slate-300 hover:border-blue-500 hover:text-blue-600 hover:shadow-sm';
@@ -251,21 +254,17 @@
                     `;
                 });
 
-                // Construção de cada bloco de dia
                 data.clima.datas.forEach((dia, index) => {
                     const safeID = 'dia-' + dia.replace('/', '-');
                     
-                    // Gerar o atalho de datas interno para ESTE dia específico
                     let atalhoDatasInternoHTML = `<div class="col-span-full flex gap-2 overflow-x-auto scroller pb-2 justify-center w-full mt-3 border-t border-slate-400/30 pt-3 px-2">`;
                     data.clima.datas.forEach(dTarget => {
                         const targetID = 'dia-' + dTarget.replace('/', '-');
-                        const diaFormatado = dTarget.split('/')[0] + '/' + dTarget.split('/')[1]; // Ex: 19/02
+                        const diaFormatado = dTarget.split('/')[0] + '/' + dTarget.split('/')[1]; 
                         
                         if (dTarget === dia) {
-                            // Dia correspondente ao bloco (Destacado e inativo)
                             atalhoDatasInternoHTML += `<button class="px-3 py-1.5 bg-slate-700 text-white text-[11px] font-black rounded-lg whitespace-nowrap shadow-inner cursor-default opacity-90">${diaFormatado}</button>`;
                         } else {
-                            // Outros dias (Clicáveis)
                             atalhoDatasInternoHTML += `<button onclick="document.getElementById('${targetID}').scrollIntoView({behavior: 'smooth', block: 'start'})" class="px-3 py-1.5 bg-white border border-slate-300 text-slate-600 text-[11px] font-bold rounded-lg whitespace-nowrap hover:bg-slate-100 hover:text-blue-600 hover:border-blue-300 transition-all">${diaFormatado}</button>`;
                         }
                     });
@@ -356,13 +355,12 @@
             }
             divC.innerHTML = htmlC;
             divNav.innerHTML = htmlNav; 
-            log('✅ Renderização concluída.');
+            log('✅ Interface renderizada com sucesso.');
         }
 
         function filtrarCidade(cidadeSel) {
-            log('🚀 Filtrando dados pela cidade: ' + cidadeSel);
+            log('🔍 Filtrando visualização por: ' + cidadeSel);
             
-            // Controle unificado de TODOS os botões de cidade (topo e internos)
             document.querySelectorAll('.btn-filtro-global').forEach(btn => {
                 if(btn.getAttribute('data-target-cidade') === cidadeSel) {
                     btn.classList.replace('bg-white', 'bg-blue-600');
@@ -393,11 +391,10 @@
                 }
             });
             
-            log('✅ Filtro de cidades sincronizado.');
+            log('✅ Filtros aplicados e layout atualizado.');
         }
 
         carregarDados();
     </script>
 </body>
 </html>
-
