@@ -14,10 +14,13 @@
         body { background-color: #f8fafc; font-family: 'Segoe UI', sans-serif; }
         .fade-in { animation: fadeIn 0.6s ease-out forwards; opacity: 0; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .scroller::-webkit-scrollbar { width: 5px; height: 5px; }
-        .scroller::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-        .scroller::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .scroller::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* 🎨 Correção de Contraste e Cor da Barra de Rolagem */
+        .scroller::-webkit-scrollbar { width: 6px; height: 6px; }
+        .scroller::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 10px; }
+        .scroller::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 10px; border: 1px solid #ffffff; }
+        .scroller::-webkit-scrollbar-thumb:hover { background: #1d4ed8; }
+        
         .chart-img { width: 100%; height: 60px; object-fit: contain; display: block; }
         .scroll-target { scroll-margin-top: 20px; }
     </style>
@@ -77,6 +80,13 @@
                 <div class="text-slate-400 text-xs uppercase tracking-[0.2em] mb-2 font-bold">Developed by</div>
                 <div class="text-white font-black text-2xl tracking-tight mb-6 drop-shadow-md">Rafael Novais de Miranda</div>
                 
+                <div class="flex flex-col gap-3 items-center justify-center text-sm font-medium">
+                    <a href="mailto:rafaelnovaismiranda@gmail.com" class="flex items-center gap-2 hover:bg-slate-600 hover:text-white transition-all bg-slate-800/40 px-5 py-2.5 rounded-full border border-slate-600 hover:border-slate-400 shadow-sm">
+                        <i class="ph ph-envelope-simple text-lg text-blue-300"></i>
+                        rafaelnovaismiranda@gmail.com
+                    </a>
+                </div>
+                
                 <div class="mt-8 pt-6 border-t border-slate-600/50 text-[10px] text-slate-400">
                     © 2026 Painel AgroSense • Todos os direitos reservados
                 </div>
@@ -93,11 +103,10 @@
         const EXIBIR_LOGS = true;
         function log(msg) { if(EXIBIR_LOGS) console.log(msg); }
 
-        // 🚀 Forçar início no topo da página
         window.onload = () => {
             log('🚀 Inicializando aplicação...');
             window.scrollTo(0, 0);
-            log('✅ Página posicionada no topo.');
+            log('✅ Rolagem forçada para o topo.');
         };
 
         window.onbeforeunload = () => window.scrollTo(0, 0);
@@ -112,14 +121,14 @@
         
         async function carregarDados() {
             try {
-                log('📡 Solicitando dados da API...');
+                log('📡 Iniciando fetch de dados...');
                 const response = await fetch(API_URL);
                 const data = await response.json();
                 if(data.status === 'erro_fatal') throw new Error(data.msg);
-                log('✅ Dados recebidos com sucesso.');
+                log('✅ Dados carregados com sucesso.');
                 renderizarPainel(data);
             } catch (error) {
-                log('❌ Falha na comunicação com o servidor.');
+                log('❌ Erro de conexão com a API.');
                 console.error('Erro:', error);
                 document.getElementById('loading').innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg text-center mx-auto max-w-lg"><strong>Erro de Conexão</strong><br><span class="text-sm opacity-80">${error.message}</span></div>`;
             }
@@ -134,7 +143,7 @@
         }
 
         function renderizarPainel(data) {
-            log('🏗️ Montando interface do dashboard...');
+            log('🏗️ Renderizando blocos do dashboard...');
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
 
@@ -151,7 +160,7 @@
                     <div class="text-base font-semibold opacity-90 bg-black/10 inline-block px-5 py-1 rounded-full border border-white/20 mt-1">${data.resumo.detalhe}</div>`;
             }
 
-            log('📈 Processando indicadores de mercado...');
+            log('📊 Processando mercado...');
             const divM = document.getElementById('container-mercado');
             const ordem = ['boi', 'vaca', 'novilha', 'milho', 'soja', 'cafe', 'dolar', 'btc'];
             const cfg = { 'boi': '🐮 BOI', 'vaca': '🐄 VACA', 'novilha': '🐂 NOVILHA', 'milho': '🌽 MILHO', 'soja': '🌱 SOJA', 'cafe': '☕ CAFÉ', 'dolar': '💵 DÓLAR', 'btc': '🪙 BTC' };
@@ -160,9 +169,7 @@
             ordem.forEach(key => {
                 const item = data.mercado[key];
                 if (!item) return;
-                
                 const histArr = Array.isArray(item.historico) ? item.historico : String(item.historico || '').split(',').map(Number);
-                
                 const calcVar = (dias, apiVal) => {
                     if (apiVal !== undefined && apiVal !== null && apiVal !== '') return apiVal;
                     if (histArr.length > dias) {
@@ -173,14 +180,8 @@
                     return null;
                 };
 
-                const val1d = calcVar(1, item.v1d);
-                const val7d = calcVar(7, item.v7d);
-                const val30d = calcVar(30, item.v30d);
-                const val60d = calcVar(60, item.v60d);
-                const val90d = calcVar(90, item.v90d);
-                const val365d = calcVar(365, item.v365d);
-
                 const valCotacao = parseFloat(item.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                const val1d = calcVar(1, item.v1d);
                 const fmt = (v) => {
                     if (v == null) return '<span class="text-slate-400 font-bold">-</span>';
                     const cor = v >= 0 ? 'text-emerald-700' : 'text-rose-700';
@@ -200,18 +201,18 @@
                         <div class="px-4 mt-auto">
                             <div class="grid grid-cols-3 gap-y-3 gap-x-2 text-[11px] text-center bg-slate-200 p-3 rounded-lg border border-slate-300">
                                 <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">1 Dia</span>${fmt(val1d)}</div>
-                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">7 Dias</span>${fmt(val7d)}</div>
-                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">30 Dias</span>${fmt(val30d)}</div>
-                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">60 Dias</span>${fmt(val60d)}</div>
-                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">90 Dias</span>${fmt(val90d)}</div>
-                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">1 Ano</span>${fmt(val365d)}</div>
+                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">7 Dias</span>${fmt(calcVar(7, item.v7d))}</div>
+                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">30 Dias</span>${fmt(calcVar(30, item.v30d))}</div>
+                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">60 Dias</span>${fmt(calcVar(60, item.v60d))}</div>
+                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">90 Dias</span>${fmt(calcVar(90, item.v90d))}</div>
+                                <div class="flex flex-col"><span class="text-black font-black text-[9px] uppercase">1 Ano</span>${fmt(calcVar(365, item.v365d))}</div>
                             </div>
                         </div>
                     </div>`;
             });
             divM.innerHTML = htmlM;
 
-            log('🌤️ Processando previsões climáticas por cidade...');
+            log('🌤️ Processando clima...');
             const divC = document.getElementById('clima-container');
             const divNav = document.getElementById('nav-datas'); 
             const diasSemana = ['Domingo', 'Segunda-Feira', 'Terça-Feira', 'Quarta-Feira', 'Quinta-Feira', 'Sexta-Feira', 'Sábado'];
@@ -228,7 +229,6 @@
                 return diasCurtos[d.getDay()];
             };
 
-            // Ajuste de Responsividade para Celular nos Filtros
             const botoesFiltroCidadesHTML = `
                 <div class="col-span-full flex flex-nowrap gap-2 overflow-x-auto scroller pb-2 justify-start md:justify-center w-full mt-1 px-4">
                     <button onclick="filtrarCidade('Todas')" data-target-cidade="Todas" class="btn-filtro-global px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-full whitespace-nowrap shadow transition-all">Todas</button>
@@ -255,15 +255,12 @@
                     `;
                 });
 
-                data.clima.datas.forEach((dia, index) => {
+                data.clima.datas.forEach((dia) => {
                     const safeID = 'dia-' + dia.replace('/', '-');
-                    
-                    // Ajuste de Responsividade para Celular nos Atalhos Internos
                     let atalhoDatasInternoHTML = `<div class="col-span-full flex flex-nowrap gap-2 overflow-x-auto scroller pb-2 justify-start md:justify-center w-full mt-3 border-t border-slate-400/30 pt-3 px-4">`;
                     data.clima.datas.forEach(dTarget => {
                         const targetID = 'dia-' + dTarget.replace('/', '-');
                         const diaFormatado = dTarget.split('/')[0] + '/' + dTarget.split('/')[1]; 
-                        
                         if (dTarget === dia) {
                             atalhoDatasInternoHTML += `<button class="px-3 py-1.5 bg-slate-700 text-white text-[11px] font-black rounded-lg whitespace-nowrap shadow-inner cursor-default opacity-90">${diaFormatado}</button>`;
                         } else {
@@ -276,77 +273,41 @@
                     ['Uberlândia', 'Tupaciguara', 'Fazenda', 'Lavras'].forEach(cid => {
                         const d = data.clima.dados[dia][cid];
                         if(!d) return;
-
-                        let minNascer = 360, minPor = 1080;   
-                        try {
-                            if (d.sol) {
-                                const tNascer = extractMinutes(d.sol.sunrise);
-                                const tPor = extractMinutes(d.sol.sunset);
-                                if (tNascer) minNascer = tNascer;
-                                if (tPor) minPor = tPor;
-                            }
-                        } catch(e) {}
-
                         let listItems = '';
                         d.lista.forEach(hData => {
-                            let hora = parseInt(hData.h); 
-                            let horaMin = hora * 60; 
-                            let isNoite = (horaMin < minNascer || horaMin >= minPor);
+                            let isNoite = (parseInt(hData.h) * 60 < 360 || parseInt(hData.h) * 60 >= 1080);
                             let icon, text, styleClass, textClass, pipeColor;
-
-                            if (hData.tipo === 'forte') { 
-                                icon='🚨'; text='ALERTA'; styleClass='bg-red-50 border-red-200'; textClass='text-red-900'; pipeColor='border-red-600'; 
-                            } else if (hData.tipo === 'chuva') { 
-                                icon='🌧️'; text='Chuva'; styleClass='bg-blue-50 border-blue-200'; textClass='text-blue-900'; pipeColor='border-blue-600'; 
-                            } else if (hData.tipo === 'nublado') { 
-                                icon='☁️'; text='Nublado'; styleClass='bg-slate-100 border-slate-200'; textClass='text-slate-700'; pipeColor='border-slate-500'; 
-                            } else { 
-                                if (isNoite) {
-                                    icon = '🌙'; text = 'Sem Chuva'; styleClass = 'bg-purple-50 border-purple-200'; textClass = 'text-purple-900'; pipeColor = 'border-purple-500'; 
-                                } else {
-                                    icon='☀️'; text='Sol'; styleClass='bg-amber-50 border-amber-200'; textClass='text-amber-900'; pipeColor = 'border-amber-500'; 
-                                }
-                            }
-
-                            let mmTag = '';
-                            if ((hData.tipo === 'chuva' || hData.tipo === 'forte') && hData.vol > 0) 
-                                mmTag = `<span class="text-blue-700 font-black text-xs mr-2 whitespace-nowrap">💧${hData.vol.toFixed(1)}mm</span>`;
+                            if (hData.tipo === 'forte') { icon='🚨'; text='ALERTA'; styleClass='bg-red-50 border-red-200'; textClass='text-red-900'; pipeColor='border-red-600'; }
+                            else if (hData.tipo === 'chuva') { icon='🌧️'; text='Chuva'; styleClass='bg-blue-50 border-blue-200'; textClass='text-blue-900'; pipeColor='border-blue-600'; }
+                            else if (hData.tipo === 'nublado') { icon='☁️'; text='Nublado'; styleClass='bg-slate-100 border-slate-200'; textClass='text-slate-700'; pipeColor='border-slate-500'; }
+                            else { if (isNoite) { icon = '🌙'; text = 'Sem Chuva'; styleClass = 'bg-purple-50 border-purple-200'; textClass = 'text-purple-900'; pipeColor = 'border-purple-500'; }
+                            else { icon='☀️'; text='Sol'; styleClass='bg-amber-50 border-amber-200'; textClass='text-amber-900'; pipeColor='border-amber-500'; } }
 
                             listItems += `
-                                <div class="${styleClass} ${pipeColor} border-l-[6px] border-y border-r rounded-r px-3 py-3 mb-2 grid grid-cols-[3rem_1fr_auto] items-center gap-3 shadow-sm min-h-[50px] transition-all transform hover:scale-[1.03] hover:shadow-lg hover:z-10 origin-left">
-                                    <div class="font-black text-sm text-right pr-3 border-r-2 border-black leading-none text-black opacity-80">${hora}h</div>
+                                <div class="${styleClass} ${pipeColor} border-l-[6px] border-y border-r rounded-r px-3 py-3 mb-2 grid grid-cols-[3rem_1fr_auto] items-center gap-3 shadow-sm min-h-[50px] transition-all transform hover:scale-[1.03] hover:shadow-lg origin-left">
+                                    <div class="font-black text-sm text-right pr-3 border-r-2 border-black leading-none text-black opacity-80">${hData.h}h</div>
                                     <div class="flex items-center gap-2 overflow-hidden ${textClass}">
                                         <span class="text-base flex-shrink-0">${icon}</span>
                                         <span class="whitespace-nowrap text-sm font-black uppercase tracking-tight">${text}</span>
                                     </div>
                                     <div class="flex items-center justify-end ${textClass}">
-                                        ${mmTag}
+                                        ${hData.vol > 0 ? `<span class="text-blue-700 font-black text-xs mr-2 whitespace-nowrap">💧${hData.vol.toFixed(1)}mm</span>` : ''}
                                         <div class="text-base font-black opacity-100 text-right">${hData.temp.toFixed(0)}°C</div>
                                     </div>
                                 </div>`;
                         });
-
                         cards += `
                             <div data-cidade="${cid}" class="bg-white rounded-xl shadow border border-slate-200 flex flex-col h-[650px] overflow-hidden hover:shadow-xl transition-shadow duration-300 card-clima">
-                                <div class="p-3 border-b border-slate-200 font-black text-sm text-center text-slate-600 uppercase tracking-widest bg-slate-50 flex items-center justify-center gap-2">
-                                    <span class="text-lg">📍</span> ${cid}
-                                </div>
-                                <div class="flex-1 overflow-y-auto p-3 scroller bg-white">
-                                    ${listItems}
-                                </div>
+                                <div class="p-3 border-b border-slate-200 font-black text-sm text-center text-slate-600 uppercase tracking-widest bg-slate-50 flex items-center justify-center gap-2"><span>📍</span> ${cid}</div>
+                                <div class="flex-1 overflow-y-auto p-3 scroller bg-white">${listItems}</div>
                             </div>`;
                     });
 
                     htmlC += `
                         <div id="${safeID}" class="scroll-target animate-in fade-in slide-in-from-bottom-4 duration-700">
-                            <div class="bg-slate-300 text-slate-800 py-4 px-2 rounded-t-xl shadow mb-0 border-b-4 border-slate-400 flex flex-col items-center justify-center">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <span class="text-2xl">📅</span> 
-                                    <span class="font-black text-xl tracking-wide">${dia} - <span class="font-normal opacity-90 text-lg">${getDiaSemana(dia)}</span></span>
-                                </div>
-                                
+                            <div class="bg-slate-400 text-slate-900 py-4 px-2 rounded-t-xl shadow mb-0 border-b-4 border-slate-600 flex flex-col items-center justify-center">
+                                <div class="flex items-center gap-3 mb-2"><span class="text-2xl">📅</span><span class="font-black text-xl tracking-wide">${dia} - <span class="font-normal opacity-90 text-lg">${getDiaSemana(dia)}</span></span></div>
                                 ${botoesFiltroCidadesHTML}
-
                                 ${atalhoDatasInternoHTML}
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-white p-6 border-x border-b border-gray-300 rounded-b-xl shadow-sm container-cards-cidades">
@@ -361,8 +322,7 @@
         }
 
         function filtrarCidade(cidadeSel) {
-            log('🔍 Filtrando visualização por: ' + cidadeSel);
-            
+            log('🔍 Filtrando por: ' + cidadeSel);
             document.querySelectorAll('.btn-filtro-global').forEach(btn => {
                 if(btn.getAttribute('data-target-cidade') === cidadeSel) {
                     btn.classList.replace('bg-white', 'bg-blue-600');
@@ -372,28 +332,16 @@
                     btn.classList.replace('text-white', 'text-slate-600');
                 }
             });
-
             const cards = document.querySelectorAll('.card-clima');
             cards.forEach(card => {
-                if (cidadeSel === 'Todas' || card.getAttribute('data-cidade') === cidadeSel) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
+                card.style.display = (cidadeSel === 'Todas' || card.getAttribute('data-cidade') === cidadeSel) ? 'flex' : 'none';
             });
-
             const containers = document.querySelectorAll('.container-cards-cidades');
             containers.forEach(container => {
-                if (cidadeSel === 'Todas') {
-                    container.classList.replace('lg:grid-cols-1', 'lg:grid-cols-4');
-                    container.classList.replace('md:grid-cols-1', 'md:grid-cols-2');
-                } else {
-                    container.classList.replace('lg:grid-cols-4', 'lg:grid-cols-1');
-                    container.classList.replace('md:grid-cols-2', 'md:grid-cols-1');
-                }
+                if (cidadeSel === 'Todas') { container.classList.replace('lg:grid-cols-1', 'lg:grid-cols-4'); container.classList.replace('md:grid-cols-1', 'md:grid-cols-2'); }
+                else { container.classList.replace('lg:grid-cols-4', 'lg:grid-cols-1'); container.classList.replace('md:grid-cols-2', 'md:grid-cols-1'); }
             });
-            
-            log('✅ Filtros aplicados e layout atualizado.');
+            log('✅ Filtros aplicados.');
         }
 
         carregarDados();
