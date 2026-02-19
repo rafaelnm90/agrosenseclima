@@ -228,8 +228,9 @@
                 return diasCurtos[d.getDay()];
             };
 
+            // Ajuste de Responsividade para Celular nos Filtros
             const botoesFiltroCidadesHTML = `
-                <div class="col-span-full flex gap-2 overflow-x-auto scroller pb-2 justify-center w-full mt-1 px-2">
+                <div class="col-span-full flex flex-nowrap gap-2 overflow-x-auto scroller pb-2 justify-start md:justify-center w-full mt-1 px-4">
                     <button onclick="filtrarCidade('Todas')" data-target-cidade="Todas" class="btn-filtro-global px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-full whitespace-nowrap shadow transition-all">Todas</button>
                     <button onclick="filtrarCidade('Uberlândia')" data-target-cidade="Uberlândia" class="btn-filtro-global px-4 py-2 bg-white border border-slate-300 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap hover:bg-slate-50 transition-all">Uberlândia</button>
                     <button onclick="filtrarCidade('Tupaciguara')" data-target-cidade="Tupaciguara" class="btn-filtro-global px-4 py-2 bg-white border border-slate-300 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap hover:bg-slate-50 transition-all">Tupaciguara</button>
@@ -257,7 +258,8 @@
                 data.clima.datas.forEach((dia, index) => {
                     const safeID = 'dia-' + dia.replace('/', '-');
                     
-                    let atalhoDatasInternoHTML = `<div class="col-span-full flex gap-2 overflow-x-auto scroller pb-2 justify-center w-full mt-3 border-t border-slate-400/30 pt-3 px-2">`;
+                    // Ajuste de Responsividade para Celular nos Atalhos Internos
+                    let atalhoDatasInternoHTML = `<div class="col-span-full flex flex-nowrap gap-2 overflow-x-auto scroller pb-2 justify-start md:justify-center w-full mt-3 border-t border-slate-400/30 pt-3 px-4">`;
                     data.clima.datas.forEach(dTarget => {
                         const targetID = 'dia-' + dTarget.replace('/', '-');
                         const diaFormatado = dTarget.split('/')[0] + '/' + dTarget.split('/')[1]; 
@@ -302,7 +304,7 @@
                                 if (isNoite) {
                                     icon = '🌙'; text = 'Sem Chuva'; styleClass = 'bg-purple-50 border-purple-200'; textClass = 'text-purple-900'; pipeColor = 'border-purple-500'; 
                                 } else {
-                                    icon='☀️'; text='Sol'; styleClass='bg-amber-50 border-amber-200'; textClass='text-amber-900'; pipeColor='border-amber-500'; 
+                                    icon='☀️'; text='Sol'; styleClass='bg-amber-50 border-amber-200'; textClass='text-amber-900'; pipeColor = 'border-amber-500'; 
                                 }
                             }
 
