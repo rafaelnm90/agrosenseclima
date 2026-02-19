@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgroSense</title>
+    <title>Painel AgroSense</title>
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚜</text></svg>">
     
@@ -23,6 +23,7 @@
         .chart-img { width: 100%; height: 60px; object-fit: contain; display: block; }
         .scroll-target { scroll-margin-top: 20px; }
 
+        /* Estilização para os cards de mercado */
         .card-mercado-hover:hover {
             border-color: #3b82f6 !important;
             box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.2), 0 8px 10px -6px rgba(37, 99, 235, 0.2) !important;
@@ -32,6 +33,19 @@
             background-color: #eff6ff !important;
             border-color: #bfdbfe !important;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08) !important;
+        }
+
+        /* 🎨 Classes de estado para os botões de filtro */
+        .btn-filtro-ativo {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+        }
+        .btn-filtro-inativo {
+            background-color: #ffffff !important;
+            color: #475569 !important;
+            border-color: #cbd5e1 !important;
         }
     </style>
 </head>
@@ -197,7 +211,6 @@
                     if (histArr.length > dias) {
                         const atual = histArr[histArr.length - 1];
                         const passado = histArr[histArr.length - 1 - dias];
-                        // ✅ Correção: 'passado' em vez de 'pastado'
                         if (passado && passado > 0) return ((atual - passado) / passado) * 100;
                     }
                     return null;
@@ -253,11 +266,11 @@
 
             const botoesFiltroCidadesHTML = `
                 <div class="col-span-full flex flex-nowrap gap-2 overflow-x-auto scroller pb-2 justify-start md:justify-center w-full mt-1 px-4">
-                    <button onclick="filtrarCidade('Todas')" data-target-cidade="Todas" class="btn-filtro-global px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-full whitespace-nowrap shadow transition-all">Todas</button>
-                    <button onclick="filtrarCidade('Uberlândia')" data-target-cidade="Uberlândia" class="btn-filtro-global px-4 py-2 bg-white border border-slate-300 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap hover:bg-slate-50 transition-all">Uberlândia</button>
-                    <button onclick="filtrarCidade('Tupaciguara')" data-target-cidade="Tupaciguara" class="btn-filtro-global px-4 py-2 bg-white border border-slate-300 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap hover:bg-slate-50 transition-all">Tupaciguara</button>
-                    <button onclick="filtrarCidade('Fazenda')" data-target-cidade="Fazenda" class="btn-filtro-global px-4 py-2 bg-white border border-slate-300 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap hover:bg-slate-50 transition-all">Fazenda</button>
-                    <button onclick="filtrarCidade('Lavras')" data-target-cidade="Lavras" class="btn-filtro-global px-4 py-2 bg-white border border-slate-300 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap hover:bg-slate-50 transition-all">Lavras</button>
+                    <button onclick="filtrarCidade('Todas')" data-target-cidade="Todas" class="btn-filtro-global px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap transition-all border btn-filtro-ativo">Todas</button>
+                    <button onclick="filtrarCidade('Uberlândia')" data-target-cidade="Uberlândia" class="btn-filtro-global px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap transition-all border btn-filtro-inativo hover:bg-slate-50">Uberlândia</button>
+                    <button onclick="filtrarCidade('Tupaciguara')" data-target-cidade="Tupaciguara" class="btn-filtro-global px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap transition-all border btn-filtro-inativo hover:bg-slate-50">Tupaciguara</button>
+                    <button onclick="filtrarCidade('Fazenda')" data-target-cidade="Fazenda" class="btn-filtro-global px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap transition-all border btn-filtro-inativo hover:bg-slate-50">Fazenda</button>
+                    <button onclick="filtrarCidade('Lavras')" data-target-cidade="Lavras" class="btn-filtro-global px-4 py-2 text-xs font-bold rounded-full whitespace-nowrap transition-all border btn-filtro-inativo hover:bg-slate-50">Lavras</button>
                 </div>
             `;
 
@@ -349,21 +362,31 @@
 
         function filtrarCidade(cidadeSel) {
             log('🔍 Filtrando visualização por: ' + cidadeSel);
+            
+            // 🎯 Atualização robusta de classes de estado
             document.querySelectorAll('.btn-filtro-global').forEach(btn => {
-                if(btn.getAttribute('data-target-cidade') === cidadeSel) {
-                    btn.classList.replace('bg-white', 'bg-blue-600');
-                    btn.classList.replace('text-slate-600', 'text-white');
+                const target = btn.getAttribute('data-target-cidade');
+                if(target === cidadeSel) {
+                    btn.classList.remove('btn-filtro-inativo');
+                    btn.classList.add('btn-filtro-ativo');
                 } else {
-                    btn.classList.replace('bg-blue-600', 'bg-white');
-                    btn.classList.replace('text-white', 'text-slate-600');
+                    btn.classList.remove('btn-filtro-ativo');
+                    btn.classList.add('btn-filtro-inativo');
                 }
             });
+
             document.querySelectorAll('.card-clima').forEach(card => {
                 card.style.display = (cidadeSel === 'Todas' || card.getAttribute('data-cidade') === cidadeSel) ? 'flex' : 'none';
             });
+
             document.querySelectorAll('.container-cards-cidades').forEach(container => {
-                if (cidadeSel === 'Todas') { container.classList.replace('lg:grid-cols-1', 'lg:grid-cols-4'); container.classList.replace('md:grid-cols-1', 'md:grid-cols-2'); }
-                else { container.classList.replace('lg:grid-cols-4', 'lg:grid-cols-1'); container.classList.replace('md:grid-cols-2', 'md:grid-cols-1'); }
+                if (cidadeSel === 'Todas') { 
+                    container.classList.replace('lg:grid-cols-1', 'lg:grid-cols-4'); 
+                    container.classList.replace('md:grid-cols-1', 'md:grid-cols-2'); 
+                } else { 
+                    container.classList.replace('lg:grid-cols-4', 'lg:grid-cols-1'); 
+                    container.classList.replace('md:grid-cols-2', 'md:grid-cols-1'); 
+                }
             });
         }
 
